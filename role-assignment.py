@@ -220,53 +220,35 @@ class RoleAssignment(commands.Cog):
         await channel.send(f"The {role} role has been added to {member}.")
 
     @commands.Cog.listener()
-    async def on_raw_reaction_remove(
-        self, payload: discord.RawReactionActionEvent
-    ):
-        """Function that gets invoked whenever a reaction is removed.
+async def on_raw_reaction_remove(payload: discord.RawReactionActionEvent):
+    config = await self.db.find_one({"_id": "role-config"})
 
-        It will look for a configuration file in the database and
-        update the member's role according to the removed emoji.
-        """
-        config = await self.db.find_one({"_id": "role-config"})
+    if config is None: return
+    
+    if str(payload.message_id) not in config["ids"]: return
+    
+    if str(payload.emoji) not in config["emoji"].keys(): return
 
-        if config is None:
-            return
+    if payload.user_id == self.bot.user.id: return
+    
+    channel = self.bot.get_channel(payload.channel_id)
 
-        if str(payload.message_id) not in config["ids"]:
-            return
+    member = await channel.guild.fetch_member(payload.user_id)
 
-        if str(payload.emoji) not in config["emoji"].keys():
-            return
+    role_name = config["emoji"][str(payload.emoji)]
 
-        if payload.user_id == self.bot.user.id:
-            return
+    role = discord.utils.get(channel.guild.roles, name=role_name)
 
-        channel = self.bot.get_channel(payload.channel_id)
-        thread = await self.bot.threads.find(channel=channel)
+    if role is None:
+        await channel.send(
+            f"The role associated with {payload.emoji} ({role_name}) "
+            "could not be found."
+        )
+        return # Added return here
 
-        if thread is None:
-            return
+    await member.remove_roles(role)
 
-        user = thread.recipient
-
-        if not isinstance(user, int):
-            user = user.id
-
-        member = self.bot.guild.get_member(user)
-
-        role_name = config["emoji"][str(payload.emoji)]
-        role = discord.utils.get(self.bot.guild.roles, name=role_name)
-
-        if role is None:
-            await channel.send(
-                f"The role associated with {payload.emoji} ({role_name}) "
-                "could not be found."
-            )
-
-        await member.remove_roles(role)
-
-        await channel.send(f"The {role} role has been removed from {member}.")
+    await channel.send(f"The {role} role has been removed from {member}.")
 
 
 def setup(bot):
