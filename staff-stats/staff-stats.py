@@ -46,7 +46,7 @@ class StaffStatsPlugin(commands.Cog):
         staff_members = list()
 
         for member in self.bot.modmail_guild.members:
-            if member.permissions_in(category).read_messages:
+            if member.permissions_for(category).read_messages:
                 if not member.bot:
                     staff_members.append(str(member.id))
 
