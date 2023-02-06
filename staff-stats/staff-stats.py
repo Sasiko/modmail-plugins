@@ -36,7 +36,7 @@ class StaffStatsPlugin(commands.Cog):
             await asyncio.sleep(86400)
 
     @commands.command()
-    @checks.has_permissions(PermissionLevel.ADMIN)
+    @checks.has_permissions(PermissionLevel.ADMINSTRATOR)
     async def syncstaff(self, ctx):
         """
         Sync Staff
