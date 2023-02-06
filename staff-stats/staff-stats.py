@@ -24,10 +24,10 @@ class StaffStatsPlugin(commands.Cog):
 
             staff_members = list()
 
-            for member_id in self.bot.modmail_guild.members:
-                member = self.bot.modmail_guild.get_member(member_id)
-                if member and not member.bot and category.permissions_for(member).read_messages:
-                    staff_members.append(str(member.id))
+            for member in self.bot.modmail_guild.members:
+                if category.permissions_for(member).read_messages:
+                    if not member.bot:
+                        staff_members.append(str(member.id))
 
             await self.db.find_one_and_update(
                 {"_id": "list"}, {"$set": {"staff": staff_members}}, upsert=True
@@ -45,10 +45,10 @@ class StaffStatsPlugin(commands.Cog):
 
         staff_members = list()
 
-        for member_id in self.bot.modmail_guild.members:
-            member = self.bot.modmail_guild.get_member(member_id)
-            if member and not member.bot and category.permissions_for(member).read_messages:
-                staff_members.append(str(member.id))
+        for member in self.bot.modmail_guild.members:
+            if category.permissions_for(member).read_messages:
+                if not member.bot:
+                    staff_members.append(str(member.id))
 
         await self.db.find_one_and_update(
             {"_id": "list"}, {"$set": {"staff": staff_members}}, upsert=True
